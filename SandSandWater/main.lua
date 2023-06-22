@@ -51,7 +51,7 @@ function HSV(h, s, v)
     return r+m, g+m, b+m
 end
 
-function add_cell(r, g, b, name, replace_when_place, update, description, type_, tags, on_create)
+function add_cell(r, g, b, name, replace_when_place, update, description, type_, tags, on_create, on_draw)
     if description == nil then
         description = "This is " .. name
     end
@@ -64,7 +64,10 @@ function add_cell(r, g, b, name, replace_when_place, update, description, type_,
     if on_create == nil then
         on_create = function(x, y, id) end
     end
-    table.insert(types, {r, g, b, name, replace_when_place, update, description, type_, tags, on_create})
+    if on_draw == nil then
+        on_draw = nil
+    end
+    table.insert(types, {r, g, b, name, replace_when_place, update, description, type_, tags, on_create, on_draw})
 end
 
 function get_cell(x, y, givedata)
@@ -225,6 +228,9 @@ function love.draw()
                 g = celldata.color[2]
                 b = celldata.color[3]
             end
+            if types[cellid][11] ~= nil then
+                r, g, b = types[cellid][11](x, y, cellid)
+            end
             love.graphics.setColor(r, g, b, 1)
             love.graphics.rectangle("fill", (x-1)*cellsize, (y-1)*cellsize, cellsize, cellsize)
             if settings.outline then
@@ -303,7 +309,7 @@ function love.mousepressed(x, y, button)
         if x > w*cellsize then
             local add_by = math.floor(((y - (wh / 2))+30) / 60)
             if droppercell + add_by < 1 or droppercell + add_by > #types then
-                print("no")
+                -- print("no")
             else
                 droppercell = droppercell + add_by
             end
